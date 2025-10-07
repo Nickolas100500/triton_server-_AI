@@ -1,0 +1,147 @@
+{
+  "fallback_responses": {
+    "hello": "Hello! How can I help you?",
+    "hi": "Hi there!",
+    "how are you": "I'm doing well, thank you!",
+    "name": "I'm DialoGPT. Nice to meet you!",
+    "joke": "Here's one: Why did the computer break up with the internet? It had connection issues!",
+    "what": "That's a good question!",
+    "why": "Let me think about that...",
+    "where": "That depends on what you're looking for.",
+    "when": "Good timing question!",
+    "default": "I understand. Please tell me more."
+  },
+  "smart_fallbacks": {
+    "hello": [
+      "Hello! Nice to meet you.", 
+      "Hi! How are you doing?", 
+      "Hey there! What's up?"
+    ],
+    "hi": [
+      "Hi! How can I help you?", 
+      "Hello! Great to see you.", 
+      "Hi there!"
+    ],
+    "how are you": [
+      "I'm doing great, thanks!", 
+      "Pretty good! How about you?", 
+      "All good here!"
+    ],
+    "name": [
+      "I'm DialoGPT, your AI assistant.", 
+      "My name is DialoGPT. What's yours?", 
+      "I'm an AI chatbot called DialoGPT."
+    ],
+    "joke": [
+      "Why don't scientists trust atoms? Because they make up everything!", 
+      "What do you call a fake noodle? An impasta!", 
+      "Why did the scarecrow win an award? He was outstanding in his field!"
+    ],
+    "what": [
+      "That's a great question!", 
+      "Interesting topic!", 
+      "Good point!"
+    ],
+    "why": [
+      "That's worth thinking about.", 
+      "Good question!", 
+      "Let me consider that."
+    ],
+    "where": [
+      "That depends on the context.", 
+      "Good location question!", 
+      "That's a place-related query."
+    ],
+    "when": [
+      "Timing is important indeed.", 
+      "That's time-related.", 
+      "Good timing question!"
+    ]
+  },
+  "default_responses": [
+    "That's interesting! Tell me more.",
+    "I understand. Please continue.",
+    "Could you elaborate on that?",
+    "That's a good point.",
+    "I see what you mean."
+  ],
+  "simple_fallbacks": {
+    "hello": "Hello! How can I help you?",
+    "hi": "Hello! How can I help you?",
+    "how are you": "I'm doing well, thank you for asking!",
+    "name": "I'm a DialoGPT chatbot. What's your name?",
+    "joke": "Here's a joke: Why don't programmers like nature? It has too many bugs!",
+    "what": "That's an interesting question!",
+    "default": "I understand. Could you tell me more?"
+  },
+  "test_prompts": [
+    "Hello",
+    "How are you?", 
+    "What's your name?",
+    "Tell me a joke"
+  ],
+  "test_cases": [
+    {
+      "prompt": "Hi there!",
+      "description": "Простий привіт"
+    },
+    {
+      "prompt": "How are you doing today?",
+      "description": "Запитання про стан"
+    },
+    {
+      "prompt": "What is your favorite color?",
+      "description": "Запитання про преференції"
+    },
+    {
+      "prompt": "Can you help me with something?",
+      "description": "Запит про допомогу"
+    }
+  ],
+  "bad_patterns": [
+    "111", 
+    "222", 
+    "333",
+    "AAAAAA",
+    "BBBBBB"
+  ],
+  "quality_check_patterns": [
+    "111",
+    "222", 
+    "333",
+    "XXXXXX"
+  ],
+  "fallback_keywords": [
+    "hello", 
+    "hi", 
+    "how are you", 
+    "name", 
+    "joke", 
+    "what"
+  ],
+  "exit_commands": [
+    "quit", 
+    "exit", 
+    "bye"
+  ],
+  "problematic_tokens": [
+    "1", 
+    "2", 
+    "3", 
+    "4", 
+    "5", 
+    "6", 
+    "7", 
+    "8", 
+    "9", 
+    "0", 
+    "<", 
+    ">", 
+    "\n", 
+    "\t", 
+    "||", 
+    "--", 
+    "==", 
+    "++"
+  ]
+}

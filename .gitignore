@@ -1,0 +1,16 @@
+*.onnx
+*.plan
+*.engine
+*.pt
+*.pth
+*.ckpt
+*.trt
+*.weights
+*.bin
+/__pycache__/
+/.venv/
+/venv/
+/models/
+/triton/models/
+*.log
+*.tmp

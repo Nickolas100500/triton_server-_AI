@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DialoGPT Chat Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .chat-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 800px;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .chat-header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .api-status {
+            font-size: 12px;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 10px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            font-family: monospace;
+        }
+        
+        .status-indicator {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-online { background: #4CAF50; }
+        .status-offline { background: #f44336; }
+        .status-loading { background: #ff9800; }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message.user {
+            justify-content: flex-end;
+        }
+        
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+        
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .message.bot .message-bubble {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .message-info {
+            font-size: 11px;
+            color: #666;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+        
+        .user .message-info {
+            color: rgba(255,255,255,0.8);
+            text-align: right;
+        }
+        
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .settings-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .settings-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .setting-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .setting-item input[type="checkbox"] {
+            accent-color: #667eea;
+        }
+        
+        .input-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        #messageInput {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            outline: none;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        #messageInput:focus {
+            border-color: #667eea;
+        }
+        
+        #sendButton {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        #sendButton:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        #sendButton:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .welcome-message {
+            text-align: center;
+            color: #666;
+            padding: 40px 20px;
+            font-size: 16px;
+        }
+        
+        .welcome-message .emoji {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>🤖 DialoGPT Chat</h1>
+            <div class="api-status" id="apiStatus">
+                {"message":"DialoGPT Chat API","status":"loading"}
+            </div>
+            <div class="status-indicator">
+                <span class="status-dot status-loading" id="statusDot"></span>
+                <span id="statusText">Підключення...</span>
+            </div>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="welcome-message" id="welcomeMessage">
+                <div class="emoji">💬</div>
+                <div>Привіт! Я DialoGPT чат-бот.<br>Можу працювати з Triton сервером або у фолбек режимі.<br>Як справи?</div>
+            </div>
+        </div>
+        
+        <div class="chat-input-container">
+            <div class="settings-row">
+                <div class="settings-left">
+                    <div class="setting-item">
+                        <input type="checkbox" id="smartFallback" checked>
+                        <label for="smartFallback">Розумний фолбек</label>
+                    </div>
+                    <div class="setting-item">
+                        <input type="checkbox" id="autoScroll" checked>
+                        <label for="autoScroll">Автоскрол</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-row">
+                <input 
+                    type="text" 
+                    id="messageInput" 
+                    placeholder="Введіть ваше повідомлення..."
+                    maxlength="200"
+                    autocomplete="off"
+                >
+                <button id="sendButton">Надіслати</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const smartFallbackCheckbox = document.getElementById('smartFallback');
+        const autoScrollCheckbox = document.getElementById('autoScroll');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const welcomeMessage = document.getElementById('welcomeMessage');
+        const apiStatus = document.getElementById('apiStatus');
+
+        let isServiceAvailable = false;
+        const API_BASE = window.location.origin;
+
+        // Check API health status
+        async function checkApiStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                apiStatus.textContent = JSON.stringify({ message: 'DialoGPT Chat API', ...data });
+                return data;
+            } catch (error) {
+                apiStatus.textContent = '{"message":"API Error","status":"failed"}';
+                return null;
+            }
+        }
+
+        // Check service health on load
+        async function checkHealth() {
+            try {
+                // Check API health/status
+                const healthRoot = await checkApiStatus();
+                statusText.textContent = 'Перевірка сервісу...';
+                statusDot.className = 'status-dot status-loading';
+                const health = healthRoot || { dialogpt_chat: 'unavailable' };
+                if (health.dialogpt_chat === 'available') {
+                    isServiceAvailable = true;
+                    statusText.textContent = 'Онлайн';
+                    statusDot.className = 'status-dot status-online';
+                } else {
+                    isServiceAvailable = false;
+                    statusText.textContent = 'Офлайн (тільки fallback)';
+                    statusDot.className = 'status-dot status-offline';
+                }
+            } catch (error) {
+                isServiceAvailable = false;
+                statusText.textContent = 'Помилка з\'єднання';
+                statusDot.className = 'status-dot status-offline';
+            }
+        }
+
+        function addMessage(text, isUser, metadata = {}) {
+            if (welcomeMessage && !isUser) {
+                welcomeMessage.style.display = 'none';
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'message-bubble';
+            bubbleDiv.textContent = text;
+            
+            messageDiv.appendChild(bubbleDiv);
+            
+            if (!isUser && (metadata.source || metadata.intent)) {
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'message-info';
+                
+                const info = [];
+                if (metadata.source) info.push(`джерело: ${metadata.source}`);
+                if (metadata.quality !== undefined) info.push(`якість: ${metadata.quality ? '✅' : '❌'}`);
+                if (metadata.intent) info.push(`намір: ${metadata.intent}`);
+                
+                // Prevent duplicate info lines on the same bubble
+                if (!bubbleDiv.querySelector('.message-info')) {
+                    infoDiv.textContent = info.join(' | ');
+                    bubbleDiv.appendChild(infoDiv);
+                }
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            
+            if (autoScrollCheckbox.checked) {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            messageInput.disabled = true;
+            sendButton.disabled = true;
+            sendButton.textContent = 'Відправляється...';
+
+            addMessage(message, true);
+            messageInput.value = '';
+
+            try {
+                const response = await fetch(`${API_BASE}/predict`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        use_smart_fallback: smartFallbackCheckbox.checked
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    addMessage(data.response, false, {
+                        source: data.source,
+                        quality: data.quality,
+                        intent: data.intent
+                    });
+                } else {
+                    const errorData = await response.json();
+                    addMessage(`Помилка: ${errorData.detail}`, false, { source: 'error' });
+                }
+            } catch (error) {
+                addMessage(`Помилка з'єднання: ${error.message}`, false, { source: 'error' });
+            }
+
+            messageInput.disabled = false;
+            sendButton.disabled = false;
+            sendButton.textContent = 'Надіслати';
+            messageInput.focus();
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+        
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Initialize
+        checkHealth();
+        messageInput.focus();
+    </script>
+</body>
+</html>

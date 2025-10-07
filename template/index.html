@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResNet Image Classification</title>
+  <style>
+    :root {
+      --bg1: #eef2f7;
+      --bg2: #ffffff;
+      --primary: #667eea;
+      --primary2: #764ba2;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --success: #10b981;
+      --danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji';
+      color: var(--text);
+      background: linear-gradient(135deg, var(--bg1), #f8fafc);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1000px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 18px 22px;
+      background: linear-gradient(135deg, var(--primary), var(--primary2));
+      color: white;
+    }
+    .header h1 { margin: 0; font-size: 20px; }
+    .header p { margin: 6px 0 0; font-size: 12px; opacity: .9; }
+
+    .content { padding: 20px; }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } }
+
+    .card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .card h3 { margin: 0 0 12px; font-size: 16px; }
+
+    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .row + .row { margin-top: 10px; }
+    .input, .select, .btn {
+      font-size: 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      outline: none;
+    }
+    .input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
+    .btn {
+      background: linear-gradient(135deg, var(--primary), var(--primary2));
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: transform .15s ease, box-shadow .15s ease, opacity .2s;
+    }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(102,126,234,.28); }
+    .btn:disabled { opacity: .6; cursor: not-allowed; box-shadow: none; transform: none; }
+
+    #result {
+      margin-top: 12px;
+      padding: 12px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .media { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    @media (min-width: 520px) { .media { grid-template-columns: 1fr 1fr; } }
+
+    video, canvas { width: 100%; height: auto; border: 1px dashed var(--border); border-radius: 10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>ResNet Image Classification</h1>
+      <p>Triton Inference • Upload image or capture from webcam</p>
+    </div>
+    <div class="content">
+      <div class="grid">
+        <div class="card">
+          <h3>Завантаження зображення</h3>
+          <form id="uploadForm" enctype="multipart/form-data">
+            <div class="row">
+              <input class="input" type="file" id="fileInput" name="file" accept="image/*">
+            </div>
+            <div class="row">
+              <input class="input" type="text" id="modelName" name="model_name" value="classifier_onnx" placeholder="model name">
+              <button class="btn" type="submit">Відправити</button>
+            </div>
+          </form>
+          <div id="result"></div>
+        </div>
+
+        <div class="card">
+          <h3>Веб-камера</h3>
+          <div class="media">
+            <video id="webcam" width="320" height="240" autoplay></video>
+            <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <button class="btn" type="button" onclick="capture()">Зробити фото з камери</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+document.getElementById('uploadForm').onsubmit = function(e) {
+  e.preventDefault();
+  const formData = new FormData();
+  formData.append('file', document.getElementById('fileInput').files[0]);
+  formData.append('model_name', document.getElementById('modelName').value);
+   
+  fetch('/predict/?model_name=' + encodeURIComponent(document.getElementById('modelName').value), {
+    method: 'POST',
+    body: formData
+  })
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById('result').innerHTML = `
+      <div><b>Клас:</b> ${data.class_name ?? '-'}</div>
+      <div><b>Логіт:</b> ${data.confidence_logit ?? '-'}</div>
+      ${data.class_id !== undefined ? `<div><b>ID класу:</b> ${data.class_id}</div>` : ''}
+      ${data.model_used ? `<div><b>Модель:</b> ${data.model_used}</div>` : ''}
+    `;
+  })
+  .catch(err => alert("Помилка: " + err));
+};
+
+// Підключення до веб-камери
+const video = document.getElementById('webcam');
+navigator.mediaDevices.getUserMedia({ video: true })
+  .then(stream => {
+    video.srcObject = stream;
+  })
+  .catch(err => {
+    alert("Не вдалося підключити камеру: " + err);
+  });
+
+// Функція для збереження кадру у canvas та вибору для відправки
+function capture() {
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  canvas.style.display = 'block';
+
+  // Конвертуємо зображення з canvas у файл та підставляємо у форму
+  canvas.toBlob(function(blob) {
+    const fileInput = document.getElementById('fileInput');
+    // Створюємо новий файл для input
+    const file = new File([blob], "webcam.png", { type: "image/png" });
+    // Підставляємо файл у input (щоб можна було одразу відправити)
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+    fileInput.files = dataTransfer.files;
+    alert("Фото з камери готове для відправки! Натисніть 'Відправити'.");
+  }, 'image/png');
+}
+</script>
+
+</body>
+</html>
