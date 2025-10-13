@@ -4,7 +4,7 @@ services:
   # Тритон для инференса моделей
   triton:
     container_name: triton
-    image: nvcr.io/nvidia/tritonserver:24.09-py3
+    image: nvcr.io/nvidia/tritonserver:22.12-py3
     ports:
       - 8000:8000  # HTTP endpoint for inference
       - 8001:8001  # GRPC endpoint for inference
@@ -23,7 +23,7 @@ services:
   # TensorRT для експорту моделей в .plan
   trtexec:
     container_name: trtexec
-    image: nvcr.io/nvidia/tensorrt:21.12-py3
+    image: nvcr.io/nvidia/tensorrt:22.12-py3
     volumes:
       - ./trtexec_workspace:/workspace
     command: ["tail", "-f", "/dev/null"]

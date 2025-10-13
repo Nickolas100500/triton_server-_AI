@@ -1,3 +1,4 @@
+
 from interface.generator import generate_response
 
 def run_tests():

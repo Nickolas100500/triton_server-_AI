@@ -81,12 +81,12 @@ def safe_validate_prompt(prompt: str):
 
 # Fallback responses for when DialoGPT is not available
 FALLBACK_RESPONSES = [
-    "Привіт! Як справи?",
-    "Цікаве питання! Розкажіть більше.",
-    "Я слухаю вас.",
-    "Що вас цікавить?",
-    "Давайте поговоримо про щось цікаве!",
-    "Як ваші справи сьогодні?"
+    "Hello! How are you?",
+    "Interesting question! Tell me more.",
+    "I'm listening to you.",
+    "What are you interested in?",
+    "Let's talk about something interesting!",
+    "How are you doing today?"
 ]
 
 # Pydantic models

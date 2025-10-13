@@ -3,7 +3,7 @@ DialoGPT Configuration
 """
 
 # Налаштування генерації
-TEMPERATURE = 0.9           # Температура для sampling (0.1-2.0)
+TEMPERATURE = 0.6           # Температура для sampling (0.1-2.0)
 TOP_K = 50                  # Top-k sampling
 MAX_NEW_TOKENS = 20         # Максимум нових токенів
 TARGET_LENGTH = 128         # Довжина контексту
