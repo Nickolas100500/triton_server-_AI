@@ -3,13 +3,16 @@
   docker-compose up -d
 
 
-# запуск сервака api.py для візуальної демонстрації роботи 
+# запуск сервака api.py
    python -m uvicorn api:app --reload --port 5000 --host localhost
     #http://localhost:5000/chat
 
 #  запуск сервера dialoGPT
-python -m uvicorn chat_api:app --reload --port 4000 --host localhost
+   python -m uvicorn chat_api:app --reload --port 4000 --host localhost
  # http://localhost:4000/chat
+
+#  запуск сервера api_yolo
+   python -m uvicorn api_yolo:app --reload --port 2500 --host localhost 
 
 
  # запускає teriton server conteiner 
